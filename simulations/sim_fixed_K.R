@@ -38,7 +38,7 @@ for(iK in K){
             s_th,
             m_d,
             s_d,
-            OS = "MAC")
+            OS = OS)
   curr_pars = list("adaptive" = adaptive,
                    "fixed_items" = fixed_items,
                    "items_true" = items_true,

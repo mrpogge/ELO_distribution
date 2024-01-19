@@ -30,7 +30,7 @@ res = elo(n,
             s_th,
             m_d,
             s_d,
-            OS = "MAC")
+            OS = OS)
 
 res$pars = list("adaptive" = adaptive,
                 "fixed_items" = fixed_items,

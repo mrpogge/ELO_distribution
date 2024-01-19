@@ -42,7 +42,7 @@ for(iP in 1:nrow(item_props)){
             s_th,
             item_props[iP,1], #we are iterating this
             item_props[iP,2], #we are iterating this
-            OS = "MAC")
+            OS = OS)
   
   curr_pars = list("adaptive" = adaptive,
                    "fixed_items" = fixed_items,
