@@ -232,7 +232,7 @@ elo=function(n,
 ##############################################################################
 #-----------------------------------------------------------------------------
 #res1=elo(n=200,m=100,reps=100,games=250,K=0.3,adaptive=1,mP=0.5,sP=0.1,save_replications=1)
-#res2=elo(n=200,m=100,reps=100,games=250,K=0.3,adaptive=1,mP=0.5,sP=0.1,save_replications=0)
+#res2=elo(n=200,m=100,reps=100,games=250,K=0.3,adaptive=1,mP=0.5,sP=0.1,save_replications=0, OS = "MAC")
 #res3=elo(n=200,m=100,reps=100,games=250,K=0.3,adaptive=1,mP=0.5,sP=0.1,save_replications=1,fixed_items=1,items_true=1)
 #res4=elo(n=200,m=100,reps=100,games=250,K=0.3,adaptive=1,mP=0.5,sP=0.1,save_replications=0,fixed_items=1,items_true=1)
 #res5=elo(n=200,m=100,reps=100,games=250,K=0.3,adaptive=0,mP=0.5,sP=0.1,save_replications=1)
@@ -333,4 +333,33 @@ var_elo=function(res){
   P=c(which.min(abs(theta-v[1])))
   for(i in 2:length(v)){P=c(P,which.min(abs(theta-v[i])))}
   list(mean=mean(Var),median=median(Var),computed=Var[P],predicted=m[1]+theta[P]*m[2]+theta2[P]*m[3])
+}
+
+##############################################################################
+##############################################################################
+# Creating result containers for the simulations
+##############################################################################
+##############################################################################
+create_container = function(n,
+                            m,
+                            reps,
+                            games,
+                            K,
+                            adaptive,
+                            mP,
+                            sP,
+                            fixed_items,
+                            m_th,
+                            s_th,
+                            m_d,
+                            s_d,
+                            n_){
+  container = matrix(0, nrow = n*length(K), ncol = games+games+15)
+  pars = c(n,m,reps,games,999,adaptive,mP,sP,fixed_items, items_true, m_th, s_th, m_d, s_d)
+  pars = rep(pars, times = n*length(K))
+  pars = matrix(pars, nrow = n*length(K), ncol = 14, byrow = TRUE)
+  par_names = c("n", "m", "reps", "games", "K", "adaptive", "mP", "sP", "fixed_items", "items_true", "m_th", "s_th", "m_d", "s_d")
+  res_names = c(par_names,"true_value", paste0("mean", 1:games), paste0("var", 1:games))
+  container[,1:14] = pars
+  colnames(container) = res_names
 }
