@@ -32,7 +32,7 @@ adapt_names = c("N(0.5,0.1)", "N(0.75,0.1)", "N(0.5,0.05)")
 ##############################################################################
 iA = 3
 counter = 1
-for(iK in 1:length(K)){
+for(iK in K){
   set.seed(seed_vector[counter])
   print(paste0("We are running kernel = ", adapt_names[iA] ,
                " with K = ", iK,
