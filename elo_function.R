@@ -246,12 +246,12 @@ elo=function(n,
 # Plotting based on the resulting list
 ##############################################################################
 ##############################################################################
-plot_elo=function(res,add=FALSE){
+plot_elo=function(res,add=FALSE, ylim = c(-3.2, 3.2)){
   theta=res$true
-  if(length(res)==2){
+  if(length(res)==3){
     mean_theta=apply(res$est,c(1,2),mean)
   }
-  if(length(res)==3){
+  if(length(res)==4){
     mean_theta=res$mean
   }
   theta=theta-mean(theta)
@@ -259,8 +259,23 @@ plot_elo=function(res,add=FALSE){
   v=c(-2.25,-1.5,-0.75,0,0.75,1.5,2.25)
   P=c(which.min(abs(theta-v[1])))
   for(i in 2:length(v)){P=c(P,which.min(abs(theta-v[i])))}
-  matplot(t(mean_theta[P,]),type='l',add=add)
+  matplot(t(mean_theta[P,]),type='l',add=add, ylim = ylim)
   abline(h=theta[P],col=c(1:length(v)))
+}
+
+# compute the mean variance, median variance and variances of persons closest to c(-2.25,-1.5,-0.75,0,0.75,1.5,2.25), calculated and predicted
+mean_elo=function(res){
+  theta=res$true
+  if(length(res)==3){
+    mean_theta=apply(res$est,c(1,2),mean)
+  }
+  if(length(res)==4){
+    mean_theta=res$mean
+  }
+  theta=theta-mean(theta)
+  iter=ncol(mean_theta)
+  Mean=rowMeans(mean_theta[,(1+iter/2):iter])
+  list(mean=mean(Mean),median=median(Mean), bias = (mean(Mean)-mean(theta))^2)
 }
 
 ##############################################################################
@@ -270,10 +285,10 @@ plot_elo=function(res,add=FALSE){
 ##############################################################################
 bias_correction=function(res){
   theta=res$true
-  if(length(res)==2){
+  if(length(res)==3){
     mean_theta=apply(res$est,c(1,2),mean)
   }
-  if(length(res)==3){
+  if(length(res)==4){
     mean_theta=res$mean
   }
   iter=ncol(mean_theta)
@@ -290,10 +305,10 @@ bias_correction=function(res){
 ##############################################################################
 plot_elo_var=function(res,add=FALSE,points=TRUE,col=1){
   theta=res$true
-  if(length(res)==2){
+  if(length(res)==3){
     var_theta=apply(res$est,c(1,2),var)
   }
-  if(length(res)==3){
+  if(length(res)==4){
     var_theta=res$var
   }
   theta=theta-mean(theta)
@@ -318,10 +333,10 @@ plot_elo_var=function(res,add=FALSE,points=TRUE,col=1){
 # compute the mean variance, median variance and variances of persons closest to c(-2.25,-1.5,-0.75,0,0.75,1.5,2.25), calculated and predicted
 var_elo=function(res){
   theta=res$true
-  if(length(res)==2){
+  if(length(res)==3){
     var_theta=apply(res$est,c(1,2),var)
   }
-  if(length(res)==3){
+  if(length(res)==4){
     var_theta=res$var
   }
   theta=theta-mean(theta)
@@ -337,7 +352,7 @@ var_elo=function(res){
 
 ##############################################################################
 ##############################################################################
-# Creating result containers for the simulations
+# Creating result containers for the simulations (JUST IN CASE)
 ##############################################################################
 ##############################################################################
 create_container = function(n,
