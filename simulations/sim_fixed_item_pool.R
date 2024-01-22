@@ -10,7 +10,7 @@ source("elo_function.R")
 adaptive=0 #non-adaptive
 mP = sP = 999 #placeholder for the normal kernel params
 fixed_items=1 #fixed items 
-items_true=1 #error is added to the items
+items_true=1 #error is not added to the items
 K=0.25
 
 ##############################################################################
@@ -28,6 +28,7 @@ item_pool_names = c("difficult", "easy", "more_variance")
 ##############################################################################
 counter = 1
 for(iP in 1:nrow(item_props)){
+  set.seed(seed_vector[counter])
   print(paste0("We are running item pool = ", item_pool_names[iP] ,
                ", remaining iterations =  ", nrow(item_props)-counter))
   res = elo(n,

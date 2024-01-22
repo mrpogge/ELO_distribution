@@ -16,7 +16,7 @@ items_true=0
 # changing parameters
 ##############################################################################
 #11 K values
-K = c(0.01,seq(0.05,0.5,by=0.05))
+K = c(seq(0.05,0.5,by=0.05))
 # 3 different item pools
 item_props = matrix(0, nrow = 4, ncol = 2)
 item_props[1, ] = c(0,1) #difficult 

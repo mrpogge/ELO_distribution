@@ -3,7 +3,6 @@
 ##############################################################################
 source("simulations/base_settings.R")
 source("elo_function.R")
-
 ##############################################################################
 # fixed parameters
 ##############################################################################
@@ -16,7 +15,7 @@ items_true=0
 # changing parameters
 ##############################################################################
 #11 K values
-K = c(0.01,seq(0.05,0.5,by=0.05))
+K = c(seq(0.05,0.5,by=0.05))
 # 3 different item pools
 item_props = matrix(0, nrow = 4, ncol = 2)
 item_props[1, ] = c(0,1) #difficult 
@@ -31,6 +30,7 @@ item_pool_names = c("average","difficult", "easy", "more_variance")
 counter = 1
 iP = 1
 for(iK in K){
+  set.seed(seed_vector[counter])
     print(paste0("We are running item pool = ", item_pool_names[iP] ,
                  " with K = ", iK,
                  ", remaining iterations =  ", (nrow(item_props) * length(K))-counter))

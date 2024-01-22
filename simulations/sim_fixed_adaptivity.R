@@ -9,7 +9,7 @@ source("elo_function.R")
 ##############################################################################
 adaptive=1 #adaptive
 fixed_items=1 #fixed items 
-items_true=1 #error is added to the items
+items_true=1 #error is not added to the items
 m_d = 0
 s_d = 1
 K=0.25
@@ -32,6 +32,7 @@ adapt_names = c("N(0.5,0.1)", "N(0.75,0.1)", "N(0.5,0.05)")
 ##############################################################################
 counter = 1
 for(iA in 1:nrow(adapt_props)){
+  set.seed(seed_vector[counter])
   print(paste0("We are running kernel = ", adapt_names[iA] ,
                ", remaining iterations =  ", nrow(adapt_props)-counter))
   res = elo(n,

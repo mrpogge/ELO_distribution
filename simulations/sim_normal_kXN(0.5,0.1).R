@@ -16,8 +16,7 @@ s_d = 1
 ##############################################################################
 # changing parameters
 ##############################################################################
-#11 K values
-K=c(0.01,seq(0.05,0.5,by=0.05))
+K = c(seq(0.05,0.5,by=0.05))
 # 3 kernels
 adapt_props = matrix(0, nrow = 3, ncol = 2)
 adapt_props[1, ] = c(0.5,0.1) #N(0.5,0.1)
@@ -33,6 +32,7 @@ adapt_names = c("N(0.5,0.1)", "N(0.75,0.1)", "N(0.5,0.05)")
 iA = 1
 counter = 1
   for(iK in 1:length(K)){
+    set.seed(seed_vector[counter])
     print(paste0("We are running kernel = ", adapt_names[iA] ,
                  " with K = ", iK,
                  ", remaining iterations =  ", (nrow(adapt_props) * length(K))-counter))
