@@ -1,5 +1,4 @@
-#R CMD SHLIB my_func.c
-#library(tictoc)
+library(tictoc)
 
 plot_elo=function(res,add=FALSE,lwd=1){
 	theta=res$true
@@ -14,8 +13,8 @@ plot_elo=function(res,add=FALSE,lwd=1){
 }
 
 elo=function(n,m,reps,games,K,adaptive=0,mP=0,sP=1,fixed_items=0,items_true=0,m_th=0,s_th=1,m_d=0,s_d=2){
-#tic()
-dyn.load("elo_for_simulations.so")
+tic()
+dyn.load("elo_for_simulations.dll")
 
 # n - number of persons
 # m - number of items
@@ -101,14 +100,14 @@ if(fixed_items==1){
 
 res=list(true=theta,mean=mean_theta,var=var_theta)
 
-#toc()
+toc()
 
 return(res)
 # the output is [[1]] - true values, [[2]] - means (across replications) of the Elo ratings of #each person at each iteration, [[3]] - variances (across replications) of the Elo ratings of #each person at each iteration
 }
 
 elo_double=function(n,m,reps,games,K,mP,sP,m_th=0,s_th=1,m_d=0,s_d=1){
-#tic()
+tic()
 # n - number of persons
 # m - number of items
 # reps - number of replications
@@ -152,10 +151,10 @@ tmp<-.C("elo_double",
 )
 
 mean_theta=array(tmp[[10]],dim=c(n,games,2))
-var_theta=array(tmp[[12]],dim=c(n,games,2))
+var_theta=array(tmp[[11]],dim=c(n,games,2))
 
 res=list(true=theta,mean=mean_theta,var=var_theta)
-#toc()
+toc()
 return(res)
 
 }
@@ -190,7 +189,7 @@ mean_theta=mean_theta-mean(mean_theta)
 coef(lm(theta~0+mean_theta))
 }
 
-plot_elo_var=function(res,add=FALSE,points=TRUE,col=1){
+plot_elo_var=function(res,add=FALSE,points=TRUE,col=1, ylim = c(0,1), ylab = "y", xlab = "x"){
 theta=res$true
 if(length(dim(res$var))==3){
 	var_theta=(res$var[,,1]+res$var[,,2])/2
@@ -205,7 +204,7 @@ y=rowMeans(var_theta[,-(1:500)])
 x2=theta^2
 m<-coef(lm(y~x+x2))
 if(add==FALSE){
-	if(points==TRUE){plot(x,y)
+	if(points==TRUE){plot(x,y, ylim = ylim, ylab = ylab, xlab = xlab)
 	curve(m[1]+m[2]*x+m[3]*x^2,add=TRUE,col=col)}
 	if(points==FALSE){curve(m[1]+m[2]*x+m[3]*x^2,add=FALSE,col=col,from=-3,to=3)}	
 }

@@ -1,4 +1,4 @@
-dyn.load('elo_for_simulations.dll')
+dyn.load('elo_for_simulations.so')
 source('elo functions.R')
 # Non-fixed items, adaptive selection
 

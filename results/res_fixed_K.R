@@ -14,7 +14,7 @@ K=c(0.01,seq(0.05,0.5,by=0.05))
 
 means = numeric(length(output_list))
 for(i in 1:length(output_list)){
-  plot_elo(output_list[[i]])
+  plot_elo(output_list[[i]], main = )
   means[i] = mean_elo(output_list[[i]])$bias
 }
 

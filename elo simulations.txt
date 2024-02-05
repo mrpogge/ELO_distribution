@@ -1,3 +1,4 @@
+setwd("C:/Work files/Veni/Elo paper")
 dyn.load('elo_for_simulations.dll')
 source('elo functions.R')
 
@@ -118,7 +119,7 @@ for(j in 1:nrow(Design)){
 	mP=Design[j,4]
 	sP=Design[j,5]
 	games=1000
-        if(j==3){games=5500} # 10 times more post-burnin iterations in the baseline condition to have a better estimate of the variances
+        if(sum(Design[j,])==1.8){games=5500} # 10 times more post-burnin iterations in the baseline condition to have a better estimate of the variances
         if(K==0.1){games=2000} # longer chains to make sure that it converges for smaller K
 	if(K==0.2){games=1250}
 	res_double[[j]]=elo_double(n=100,m=20,reps=10,games=games,K=K,mP=mP,sP=sP,m_d=m_d,s_d=s_d)
