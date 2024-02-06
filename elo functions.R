@@ -147,13 +147,14 @@ tmp<-.C("elo_double",
 	as.double(var_theta),
 	as.double(A),
 	as.double(B),
-	as.double(rep(0,m+1))
+	as.double(rep(0,m+1)),
+	as.double(mean_delta)
 )
 
 mean_theta=array(tmp[[10]],dim=c(n,games,2))
 var_theta=array(tmp[[11]],dim=c(n,games,2))
-
-res=list(true=theta,mean=mean_theta,var=var_theta)
+mean_delta=array(tmp[[15]],dim=c(m,games,2))
+res=list(true=theta,mean=mean_theta,var=var_theta,mean_delta=mean_delta)
 toc()
 return(res)
 
