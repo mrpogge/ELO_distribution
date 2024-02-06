@@ -146,7 +146,7 @@ elo=function(n,
   # All estimates are saved over all iterations and replications
   ##############################################################################
   if(save_replications==1){
-    
+  ###  
     theta_hat=rep(0,n*reps*games)
     t=rep(0,n)
     ##############################################################################
