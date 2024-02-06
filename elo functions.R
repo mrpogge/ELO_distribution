@@ -45,7 +45,7 @@ theta_hat=rep(0,n*reps)
 delta_hat=rep(0,m*reps)
 
 mean_theta<-var_theta<-rep(0,n*games)
-	
+mean_delta<-rep(0,m*games)
 
 if(fixed_items==0){
 
@@ -64,10 +64,13 @@ if(fixed_items==0){
 		as.integer(adaptive),
 		as.double(A),
 		as.double(B),
-		as.double(c(0:m)))
+		as.double(c(0:m)),
+    as.double(mean_delta)		
+)
 
 	mean_theta=matrix(tmp[[10]],ncol=games)
 	var_theta=matrix(tmp[[11]],ncol=games)
+	mean_delta=matrix(tmp[[16]],ncol=games)
 }
 
 if(fixed_items==1){
@@ -98,12 +101,15 @@ if(fixed_items==1){
 		var_theta=matrix(tmp[[11]],ncol=games)
 }
 
-res=list(true=theta,mean=mean_theta,var=var_theta)
+res=list(true=theta,mean=mean_theta,var=var_theta,mean_delta=mean_delta)
 
 toc()
 
 return(res)
-# the output is [[1]] - true values, [[2]] - means (across replications) of the Elo ratings of #each person at each iteration, [[3]] - variances (across replications) of the Elo ratings of #each person at each iteration
+# the output is [[1]] - true values, 
+# [[2]] - means (across replications) of the Elo ratings of #each person at each iteration, 
+# [[3]] - variances (across replications) of the Elo ratings of #each person at each iteration
+# [[4]] - means (across replications) of the Elo ratings of each item at each iteration
 }
 
 elo_double=function(n,m,reps,games,K,mP,sP,m_th=0,s_th=1,m_d=0,s_d=1){
@@ -157,6 +163,11 @@ mean_delta=array(tmp[[15]],dim=c(m,games,2))
 res=list(true=theta,mean=mean_theta,var=var_theta,mean_delta=mean_delta)
 toc()
 return(res)
+
+# the output is [[1]] - true values of the persons, 
+# [[2]] - means (across replications) of the Elo ratings of #each person at each iteration, separately for the two parallel chains, 
+# [[3]] - variances (across replications) of the Elo ratings of #each person at each iteration, separately for the two parallel chains, 
+# [[4]] - means (across replications) of the Elo ratings of each item at each iteration, separately for the two parallel chains, 
 
 }
 
