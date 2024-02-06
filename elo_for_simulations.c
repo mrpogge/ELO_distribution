@@ -119,7 +119,7 @@ void elo(double*K,int*reps,int*games,int*N,int*M,double*theta,double*delta,doubl
      PutRNGstate();
 }
 
-void elo_double(double*K,int*reps,int*games,int*N,int*M,double*theta,double*delta,double*t,double*d,double*mT,double*vT,double*A,double*B,double*cumsum){
+void elo_double(double*K,int*reps,int*games,int*N,int*M,double*theta,double*delta,double*t,double*d,double*mT,double*vT,double*A,double*B,double*cumsum,double*mD){
      int x=0;
      double e=0;
      double L=0;
@@ -161,6 +161,9 @@ void elo_double(double*K,int*reps,int*games,int*N,int*M,double*theta,double*delt
                     d[j+r*M[0]+h*reps[0]*M[0]]=d[j+r*M[0]+h*reps[0]*M[0]]-K[0]*(x-e);
                     /*add to the mean of person i at time point g*/
                     mT[i+g*N[0]+h*games[0]*N[0]]=mT[i+g*N[0]+h*games[0]*N[0]]+t[i+r*N[0]+h*reps[0]*N[0]]/reps[0];
+                }
+                for(int j=0;j<M[0];j++){
+                  mD[j+g*M[0]+h*games[0]*M[0]]=mD[j+g*M[0]+h*games[0]*M[0]]+d[j+r*M[0]+h*reps[0]*M[0]]/reps[0];
                 }
             }
             /*compute the variances of the item and person ratings at time point g*/
