@@ -1,6 +1,6 @@
 source("elo functions.R")
 ################################################################################
-# loading the corresponding results
+# loading the corresponding results tts
 ################################################################################
 load("output/ResultsFixedAdaptive.RData")
 res_fixed_nonadaptive = res_fixed_nonadaptive[[3]]
