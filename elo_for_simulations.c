@@ -183,7 +183,7 @@ void elo_double(double*K,int*reps,int*games,int*N,int*M,double*theta,double*delt
 
 
 
-void elo_history(double*K,int*reps,int*games,int*N,int*M,double*theta,double*delta,double*t,double*d,double*t_hist,double*d_hist,double*mT,double*vT,double*A,double*B,double*cumsum,int*use_mean,int*LH){
+void elo_history(double*K,int*reps,int*games,int*N,int*M,double*theta,double*delta,double*t,double*d,double*t_hist,double*d_hist,double*mT,double*vT,double*A,double*B,double*cumsum,int*use_mean,int*LH,double*mD){
      int x=0;
      double e=0;
      double L=0;
@@ -251,6 +251,10 @@ void elo_history(double*K,int*reps,int*games,int*N,int*M,double*theta,double*del
                 t_hist[i+r*N[0]+(gg-1)*N[0]*reps[0]]=t[i+r*N[0]];
                 d_hist[j+r*M[0]+(gg-1)*M[0]*reps[0]]=d[j+r*M[0]];
             }
+            /*for each item, add the current value to the mean of item j at time point g*/
+            for(int j=0;j<M[0];j++){
+              mD[j+g*M[0]]=mD[j+g*M[0]]+d[j+r*M[0]]/reps[0];
+            }
         }
         /*compute the variances of the item and person ratings at time point g*/
         for(int r=0;r<reps[0];r++){
@@ -264,7 +268,7 @@ void elo_history(double*K,int*reps,int*games,int*N,int*M,double*theta,double*del
 }
 
 
-void elo_MH(double*K,int*reps,int*games,int*N,int*M,double*theta,double*delta,double*t,double*d,double*mT,double*vT,double*A,double*B,double*cumsum,double*P,double*P_star){
+void elo_MH(double*K,int*reps,int*games,int*N,int*M,double*theta,double*delta,double*t,double*d,double*mT,double*vT,double*A,double*B,double*cumsum,double*P,double*P_star,double*mD){
      int x=0;
      double e=0;
      double L=0;
@@ -326,6 +330,10 @@ void elo_MH(double*K,int*reps,int*games,int*N,int*M,double*theta,double*delta,do
                 }
                 /*add to the mean of person i at time point g*/
                 mT[i+g*N[0]]=mT[i+g*N[0]]+t[i+r*N[0]]/reps[0];
+            }
+            /*for each item, add the current value to the mean of item j at time point g*/
+            for(int j=0;j<M[0];j++){
+              mD[j+g*M[0]]=mD[j+g*M[0]]+d[j+r*M[0]]/reps[0];
             }
         }
         /*compute the variances of the item and person ratings at time point g*/
