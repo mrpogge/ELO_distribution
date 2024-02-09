@@ -2,14 +2,41 @@ library(tictoc)
 
 plot_elo=function(res,add=FALSE,lwd=1){
 	theta=res$true
-	mean_theta=res$mean
-	theta=theta-mean(theta)
-	mean_theta=apply(res$mean,2,FUN=function(X){X-mean(X)})
-	v=c(-2.25,-1.5,-0.75,0,0.75,1.5,2.25)
-	P=c(which.min(abs(theta-v[1])))
-	for(i in 2:length(v)){P=c(P,which.min(abs(theta-v[i])))}
-	matplot(t(mean_theta[P,]),type='l',add=add,lty=1,lwd=lwd,col=c(1:7),xlab='Items answered',ylab='Average Elo rating')
-	abline(h=theta[P],col=c(1:length(v)),lty=2)
+	if(dim(res$mean)==2){
+	  mean_theta=res$mean
+	  if(length(res)==4){
+	    mean_theta=mapply(t=as.data.frame(res$mean),d=as.data.frame(res$mean_delta),FUN=function(t,d){t-mean(d)})
+	  }
+	  v=c(-2,-1,0,1,2)+mean(theta)
+	  P=c(which.min(abs(theta-v[1])))
+	  for(i in 2:length(v)){P=c(P,which.min(abs(theta-v[i])))}
+	  matplot(t(mean_theta[P,]),type='l',add=add,lty=1,lwd=lwd,col=c(1:length(v)),xlab='Items answered',ylab='Average Elo rating')
+	  abline(h=theta[P],col=c(1:length(v)),lty=2)
+	}
+	if(dim(res$mean)==3){
+	    mean_theta1=mapply(t=as.data.frame(res$mean[,,1]),d=as.data.frame(res$mean_delta[,,1]),FUN=function(t,d){t-mean(d)})
+	    mean_theta2=mapply(t=as.data.frame(res$mean[,,2]),d=as.data.frame(res$mean_delta[,,2]),FUN=function(t,d){t-mean(d)})
+	    v=c(-2,-1,0,1,2)+mean(theta)
+	    P=c(which.min(abs(theta-v[1])))
+	    for(i in 2:length(v)){P=c(P,which.min(abs(theta-v[i])))}
+	    matplot(t(mean_theta1[P,]),type='l',add=add,lty=1,lwd=lwd,col=c(1:length(v)),xlab='Item pairs answered',ylab='Average Elo rating')
+	    matplot(t(mean_theta2[P,]),type='l',add=TRUE,lty=1,lwd=lwd,col=c(1:length(v)),xlab='Items answered',ylab='Average Elo rating')
+	    abline(h=theta[P],col=c(1:length(v)),lty=2)
+	}
+}
+
+plot_elo_double=function(res,add=FALSE,lwd=1){
+  theta=res$true
+  mean_theta=res$mean
+  theta=theta-mean(theta)
+  mean_theta1=apply(res$mean[,,1],2,FUN=function(X){X-mean(X)})
+  mean_theta2=apply(res$mean[,,2],2,FUN=function(X){X-mean(X)})
+  v=c(-2.25,-1.5,-0.75,0,0.75,1.5,2.25)
+  P=c(which.min(abs(theta-v[1])))
+  for(i in 2:length(v)){P=c(P,which.min(abs(theta-v[i])))}
+  matplot(t(mean_theta1[P,]),type='l',add=add,lty=1,lwd=lwd,col=c(1:7),xlab='Item pairs answered',ylab='Average Elo rating')
+  matplot(t(mean_theta2[P,]),type='l',add=TRUE,lty=1,lwd=lwd,col=c(1:7),xlab='Items answered',ylab='Average Elo rating')
+  abline(h=theta[P],col=c(1:length(v)),lty=2)
 }
 
 elo=function(n,m,reps,games,K,adaptive=0,mP=0,sP=1,fixed_items=0,items_true=0,m_th=0,s_th=1,m_d=0,s_d=2){
@@ -172,19 +199,7 @@ return(res)
 }
 
 
-plot_elo_double=function(res,add=FALSE,lwd=1){
-theta=res$true
-mean_theta=res$mean
-theta=theta-mean(theta)
-mean_theta1=apply(res$mean[,,1],2,FUN=function(X){X-mean(X)})
-mean_theta2=apply(res$mean[,,2],2,FUN=function(X){X-mean(X)})
-v=c(-2.25,-1.5,-0.75,0,0.75,1.5,2.25)
-P=c(which.min(abs(theta-v[1])))
-for(i in 2:length(v)){P=c(P,which.min(abs(theta-v[i])))}
-matplot(t(mean_theta1[P,]),type='l',add=add,lty=1,lwd=lwd,col=c(1:7),xlab='Item pairs answered',ylab='Average Elo rating')
-matplot(t(mean_theta2[P,]),type='l',add=TRUE,lty=1,lwd=lwd,col=c(1:7),xlab='Items answered',ylab='Average Elo rating')
-abline(h=theta[P],col=c(1:length(v)),lty=2)
-}
+
 
 bias_correction=function(res){
 theta=res$true
