@@ -123,6 +123,40 @@ void elo(double*K,int*reps,int*games,int*N,int*M,double*theta,double*delta,doubl
      PutRNGstate();
 }
 
+void elo_ideal(double*K,int*reps,int*games,int*N,double*theta,double*t,double*mT,double*vT,double*P){
+  int x=0;
+  double e=0;
+  double L=0;
+  double p=0;
+  double delta=0;
+  GetRNGstate();
+  for(int g=0;g<games[0];g++){
+    for(int r=0;r<reps[0];r++){
+      for(int i=0;i<N[0];i++){
+        delta=t[i+r*N[0]]-P[0];
+        L=1/(1+exp((delta-theta[i]))); 
+        /*generate the observed response*/
+        p=runif(0,1);
+        x=1*(L>p);
+        /*compute the expected accuracy based on the current ratings*/
+        e=1/(1+exp(-P[0]));
+        /* update the ratings*/
+        t[i+r*N[0]]=t[i+r*N[0]]+K[0]*(x-e);
+        /*add to the mean of person i at time point g*/
+        mT[i+g*N[0]]=mT[i+g*N[0]]+t[i+r*N[0]]/reps[0];
+      }
+    }
+    /*compute the variances of the item and person ratings at time point g*/
+    for(int r=0;r<reps[0];r++){
+      for(int i=0;i<N[0];i++){
+        vT[i+g*N[0]]=vT[i+g*N[0]]+(t[i+r*N[0]]-mT[i+g*N[0]])*(t[i+r*N[0]]-mT[i+g*N[0]])/(reps[0]-1);
+      }
+    }
+  }
+  PutRNGstate();
+}
+
+
 void elo_double(double*K,int*reps,int*games,int*N,int*M,double*theta,double*delta,double*t,double*d,double*mT,double*vT,double*A,double*B,double*cumsum,double*mD){
      int x=0;
      double e=0;
