@@ -14,7 +14,7 @@ plot_elo=function(res,add=FALSE,lwd=1){
 
 elo=function(n,m,reps,games,K,adaptive=0,mP=0,sP=1,fixed_items=0,items_true=0,m_th=0,s_th=1,m_d=0,s_d=2){
 tic()
-dyn.load("elo_for_simulations.dll")
+dyn.load("elo_for_simulations.so")
 
 # n - number of persons
 # m - number of items
