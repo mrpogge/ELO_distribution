@@ -48,8 +48,10 @@ p41 = ggplot_box(res_updated_items_random, absolute_bias,c(0.1,0.2,0.4,0.5,0.3),
 p42 = ggplot_box(res_updated_items_random, hitting_time, c(0.1,0.2,0.4,0.5,0.3), lab_y = "Hitting Time", lab_x = "K")
 p43 = ggplot_box(res_updated_items_random, var_elo_vec, c(0.1,0.2,0.4,0.5,0.3), lab_y = "Variance", lab_x = "K")
 
-
-patch1 = p11 + p12 + p13 
-patch2 = p21 + p22 + p23
-patch3 = p31 + p32 + p33 
-patch4 = p41 + p42 + p43
+################################################################################
+# Patches (need the other scripts objects !!!!)
+################################################################################
+patch_fr = p31 + p32 + p33 
+patch_ur = p41 + p42 + p43
+patch_fa = p11 + p12 + p13 + p11_mu + p12_mu + p13_mu
+patch_ua = p21 + p22 + p23 + p21_mu + p22_mu + p23_mu
