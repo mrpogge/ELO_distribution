@@ -17,14 +17,14 @@ load("output/ResultsUpdatedRandomBaseline.RData")
 ################################################################################
 # Traceplots
 ################################################################################
-alg_type = c("fix random", "fix adaptive", "updated random", "updated adaptive")
+alg_type = c("fix-random", "fix-adaptive", "updated-random", "updated-adaptive")
 res_list = list(fixed_items_random_baseline,
                 fixed_items_adaptive_baseline,
                 updated_items_random_baseline,
                 updated_items_adaptive_baseline)
 
 #version 1 (facet wrapped)
-ggplot_elo(res_list = res_list, alg_type)
+facet_wrapped_trace = ggplot_elo(res_list = res_list, alg_type)
 
 #version 2 (separate plots)
 fr_trace = ggplot_elo_single(fixed_items_random_baseline)
@@ -33,7 +33,7 @@ ur_trace = ggplot_elo_single(updated_items_random_baseline)
 ua_trace = ggplot_elo_single(updated_items_adaptive_baseline)
 
 #version 3 (no rating inflation)
-alg_type_noinf = c("fix random", "fix adaptive", "updated random")
+alg_type_noinf = c("fix-random", "fix-adaptive", "updated-random")
 res_list_noinf = list(fixed_items_random_baseline, 
                       fixed_items_adaptive_baseline,
                       updated_items_random_baseline)
@@ -56,7 +56,7 @@ ua_var = ggplot_elo_var_single(updated_items_adaptive_baseline)
 res_list_noinf = list(fixed_items_random_baseline,
                       fixed_items_adaptive_baseline,
                       updated_items_random_baseline)
-ggplot_elo_var(res_list_noinf, alg_type_noinf)
+no_inflation_var = ggplot_elo_var(res_list_noinf, alg_type_noinf, smooth = FALSE)
 
 ################################################################################
 # Bias plots
@@ -71,12 +71,18 @@ ur_bias = ggplot_bias_single(updated_items_random_baseline)
 ua_bias = ggplot_bias_single(updated_items_adaptive_baseline)
 
 # version 3 no variance inflation
-ggplot_bias(res_list_noinf, alg_type_noinf)
+no_inflation_bias = ggplot_bias(res_list_noinf, alg_type_noinf)
 
 ################################################################################
 # Patched plots
 ################################################################################
-patch_fr = fr_trace / (fr_var + fr_bias)
-patch_fa = fa_trace / (fa_var + fa_bias)
-patch_ur = ur_trace / (ur_var + ur_bias)
-patch_ua = ua_trace / (ua_var + ua_bias)
+patch_fr = fr_bias + fr_var
+patch_fa = fa_bias + fa_var
+patch_ur = ur_bias + ur_var
+
+patch_total = patch_fr / patch_fa / patch_ur
+
+
+bias_variance_patch = no_inflation_bias / no_inflation_var
+
+
