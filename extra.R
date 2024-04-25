@@ -19,7 +19,8 @@ jj=c(6,7,1,8,9)
 for(j in 1:5){lines(sqrt(Vars[,jj[j]]),col=j)}
 dev.off()
 # the plots need a legend (first with different K, second with different P)
-
+#TODO: the speed with which variance inflates depends on K and P recreate the plot!
+# Variance through iterations grouped by both K and mu (left and right)
 
 #########################################
 #### Adaptive item selection based on true values
@@ -102,6 +103,8 @@ par(mfrow=c(1,2))
 plot_elo(res) # I would want all iterations to be shown here rather than the first 1000
 plot(apply(res$mean,2,var),type='l',cex.lab=2,cex.axis=2)
 dev.off()
+
+#TODO: just traceplot (left) collapse across persons calculate the variance, plot it through iterations (right)
 
 #########################################
 #### Expected error in item difficulties
@@ -199,6 +202,8 @@ P=c(which.min(abs(theta-v[1])))
 for(i in 2:length(v)){P=c(P,which.min(abs(theta-v[i])))}
 matplot((res$exp_bias[1:1000,P]),type='l',lty=1,col=c(1:length(v)),xlab='Items answered',ylab='Expected error in item difficulty',cex.lab=2,cex.axis=2)
 dev.off()
+
+load("output/ResultsVarianceInflation.RData")
 
 #########################################
 ### Autocorrelation in the updated-random scenario
@@ -615,9 +620,6 @@ res=elo_save(500,100,500,1000,0.3,adaptive=0,m_th=log(0.7/0.3))
 
 # Expected error in item difficulties
 # Average error in person abilities
-
-setwd("C:/Work files/Veni/Elo paper/ELO_distribution")
-
 source("elo functions.R")
 
 variance_inflation2=function(n,m,reps,games,K,adaptive=0,mP=0,sP=0.5,fixed_items=0,items_true=0,m_th=0,s_th=1,m_d=0,s_d=1.5,theta=NULL){
@@ -726,6 +728,10 @@ P=c(which.min(abs(theta-v[1])))
 for(i in 2:length(v)){P=c(P,which.min(abs(theta-v[i])))}
 matplot((res$exp_bias[1:1000,P]),ylim=c(-6,6),type='l',lty=1,col=c(1:length(v)),xlab='Items answered',ylab='Expected error in item difficulty',cex.lab=2,cex.axis=2)
 matplot(res$ebi[,c(9,26,50,75,92)],ylim=c(-6,6),type='l',ylab='Average error in person ability',xlab='Timepoint',cex.lab=2,cex.axis=2)
+
+#exp_bias = expected bias
+#ebi = expected bias items
+
 
 
 

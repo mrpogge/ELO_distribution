@@ -11,7 +11,7 @@ source('elo_functions.R')
   res_lagged_baseline = elo_lag(n=1000,
                                 m=200,
                                 games=1500,
-                                reps=10000,
+                                reps=500,
                                 K=K,
                                 mP=mP,
                                 m_th=m_th,

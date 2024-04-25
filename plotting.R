@@ -91,6 +91,8 @@ plot_bias_double=function(X){
   plot(X$true,mean_theta-X$true,ylab='Bias of Elo ratings',xlab='True ability')
 }  
 
+#TODO: GGPLOT this!
+
 ################################################################################
 # GGPLOTTING. traceplots (and the corresponding helper functions )
 ################################################################################
@@ -230,6 +232,7 @@ ggplot_bias_single = function(res){
   return(plot_out)
 }
 
+#TODO: double elo bias in ggplot!!
 ggplot_bias = function(res_list, alg_type){
   est = rowMeans(res_list[[1]]$mean[,-c(1:500)])
   dat = data.frame("bias" = est - res_list[[1]]$true, "true" = res_list[[1]]$true)

@@ -34,7 +34,7 @@ p1 = ggplot_elo_single(chain_one)
 p2 = ggplot_elo_single(chain_two)
 p3 = ggplot_elo_single(chain_mean)
 
-p123 = ggplot_elo(list(chain_one, chain_two, chain_mean), c("chain 1", "chain 2", "mean"))
+p123 = ggplot_elo(list(chain_one, chain_two), c("chain 1", "chain 2"))
 
 ################################################################################
 #plot variance
@@ -49,5 +49,7 @@ p3_var = ggplot_elo_var_single(chain_mean)
 p1_bias = ggplot_bias_single(chain_one)
 p2_bias = ggplot_bias_single(chain_two)
 p3_bias = ggplot_bias_single(chain_mean)
+#TODO: double elo ggplot for bias
+
 
 

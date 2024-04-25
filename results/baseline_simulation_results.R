@@ -73,6 +73,8 @@ ua_bias = ggplot_bias_single(updated_items_adaptive_baseline)
 # version 3 no variance inflation
 no_inflation_bias = ggplot_bias(res_list_noinf, alg_type_noinf)
 
+#TODO: check why facetwrap breaks the plot
+
 ################################################################################
 # Patched plots
 ################################################################################
