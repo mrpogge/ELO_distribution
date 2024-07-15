@@ -91,7 +91,6 @@ plot_bias_double=function(X){
   plot(X$true,mean_theta-X$true,ylab='Bias of Elo ratings',xlab='True ability')
 }  
 
-#TODO: GGPLOT this!
 
 ################################################################################
 # GGPLOTTING. traceplots (and the corresponding helper functions )
@@ -142,16 +141,45 @@ ggplot_elo = function(res_list, sim_types, nrow = 2, ncol = 2){
   
   plot_out = ggplot(dat, aes(x = iteration, y = value, color = variable, linetype = true_est)) +
     facet_wrap(~factor(alg_type, 
-                       levels=c('fix-random',
-                                'fix-adaptive',
+                       levels=c('fixed-random',
+                                'fixed-adaptive',
                                 'updated-random',
                                 'updated-adaptive')), scales = "free_y", ncol = ncol,nrow = nrow) +
     geom_line() +
     labs(x = "Items Answered", y = expression(theta), color = "Student") +
-    jtools::theme_apa(legend.font.size = 10)
+    jtools::theme_apa(legend.font.size = 15) +
+    theme(axis.line = element_line(colour = "black"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank()) 
   
   return(plot_out)
 }
+
+ggplot_elo_both = function(res_list, sim_types, nrow = 1, ncol = 2){
+  
+  dat = trace_data_wrangling(res_list[[1]], sim_types[1])
+  for(i in 2:length(res_list)){
+    dat = rbind(dat, trace_data_wrangling(res_list[[i]], sim_types[i]))
+  }
+  colnames(dat) = c("variable", "value", "iteration", "true_est", "alg_type")
+  dat = as.data.frame(dat) %>% 
+    mutate(double = ifelse(true_est == "True Ability", "True Ability", alg_type))
+  
+  
+  plot_out = ggplot(dat, aes(x = iteration, y = value, color = variable, linetype = double)) +    geom_line() +
+    labs(x = "Item Pairs Answered", y = expression(theta), color = "Student") +
+    jtools::theme_apa(legend.font.size = 10)+
+    theme(axis.line = element_line(colour = "black"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank()) 
+  
+  return(plot_out)
+}
+
 
 ggplot_elo_single = function(res){
   dat = trace_data_wrangling(res, "single")
@@ -183,7 +211,7 @@ ggplot_elo_var_single = function(res){
   return(plot_out)
 }
 
-ggplot_elo_var = function(res_list, alg_type, smooth = TRUE){
+ggplot_elo_var = function(res_list, alg_type, smooth = TRUE, dELO = FALSE){
   #wrangling
   x = res_list[[1]]$true
   y = rowMeans(res_list[[1]]$var[,-c(1:500)])
@@ -196,20 +224,45 @@ ggplot_elo_var = function(res_list, alg_type, smooth = TRUE){
     dat = rbind(dat, cbind(x,y))
   }
   
-  dat = as.data.frame(cbind(dat, rep(alg_type, each = nperson)))
+  colors = factor(rep(1:length(alg_type), each = nperson), levels = 1:length(alg_type), labels = alg_type)
+  dat = as.data.frame(cbind(dat, colors))
   colnames(dat) = c("x", "y", "alg_type")
   #plotting
   if(smooth == TRUE){
     plot_out = ggplot(dat, aes(x = x,y = y, color = alg_type)) + 
       geom_point(alpha = 0.5) +
       geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = FALSE) + 
-      labs(x = "\u03B8", y = "Variance of Elo ratings") +
-      jtools::theme_apa(legend.font.size = 10)
-  } else {
+      labs(x = "True \u03B8", y = "Variance of Elo ratings") +
+      jtools::theme_apa(legend.font.size = 10)+
+      theme(axis.line = element_line(colour = "black"),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.border = element_blank(),
+            panel.background = element_blank()) 
+  } else if(dELO == FALSE) {
     plot_out = ggplot(dat, aes(x = x,y = y, color = alg_type)) + 
       geom_point(alpha = 0.5) +
-      labs(x = "\u03B8", y = "Variance of Elo ratings") +
-      jtools::theme_apa(legend.font.size = 10)
+      labs(x = "True \u03B8", y = "Variance of Elo ratings") +
+      jtools::theme_apa(legend.font.size = 10)+
+      theme(axis.line = element_line(colour = "black"),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.border = element_blank(),
+            panel.background = element_blank()) 
+  } else if(dELO == TRUE){
+    dat = dat %>% mutate(alg_type = ifelse(alg_type == "double", "1", "2"))
+    plot_out = ggplot(dat, aes(x = x,y = y, color = alg_type)) + 
+      geom_point() +
+      scale_alpha_identity() +
+      scale_color_manual(values = c("mediumpurple4", "grey")) +
+      labs(x = "True \u03B8", y = "Variance of Elo ratings") +
+      jtools::theme_apa(legend.font.size = 10)+
+      theme(axis.line = element_line(colour = "black"),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.border = element_blank(),
+            panel.background = element_blank(),
+            legend.position = "none") 
   }
 
   return(plot_out)
@@ -219,29 +272,48 @@ ggplot_elo_var = function(res_list, alg_type, smooth = TRUE){
 # GGPLOTTING. bias plots
 ################################################################################
 ggplot_bias_single = function(res){
-  est = rowMeans(res$mean[,-c(1:500)])
-  dat = data.frame("bias" = est - res$true, "true" = res$true)
+  est = res$mean[,-c(1:900)]
+  corrected_est =mapply(t=as.data.frame(est),d=as.data.frame(res$mean_delta),FUN=function(t,d){t-mean(d)})
+  corrected_est = rowMeans(corrected_est)
+  dat = data.frame("bias" = corrected_est - res$true, "true" = res$true)
   
   plot_out = ggplot(dat, aes(x = true, y = bias)) +
     geom_point(alpha = 0.5) +
     geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
     labs(x = "\u03B8", y = "Bias of Elo ratings") +
-    jtools::theme_apa(legend.font.size = 10)
+    jtools::theme_apa(legend.font.size = 10)+
+    theme(axis.line = element_line(colour = "black"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank()) 
  
   
   return(plot_out)
 }
 
-#TODO: double elo bias in ggplot!!
 ggplot_bias = function(res_list, alg_type){
-  est = rowMeans(res_list[[1]]$mean[,-c(1:500)])
-  dat = data.frame("bias" = est - res_list[[1]]$true, "true" = res_list[[1]]$true)
+  est = res_list[[1]]$mean[,-c(1:900)]
+  corrected_est =mapply(t=as.data.frame(est),d=as.data.frame(res_list[[1]]$mean_delta),FUN=function(t,d){t-mean(d)})
+  corrected_est = rowMeans(corrected_est)
+  dat = data.frame("bias" = corrected_est - res_list[[1]]$true, "true" = res_list[[1]]$true)
   nperson = nrow(dat)
   
   for(i in 2:length(res_list)){
-    est = rowMeans(res_list[[i]]$mean[,-c(1:500)])
-    dat_temp = data.frame("bias" = est - res_list[[i]]$true, "true" = res_list[[1]]$true)
-    dat = rbind(dat, dat_temp)
+    if(alg_type[i] != "double"){
+      est = res_list[[i]]$mean[,-c(1:900)]
+      corrected_est = mapply(t=as.data.frame(est),d=as.data.frame(res_list[[i]]$mean_delta),FUN=function(t,d){t-mean(d)})
+      corrected_est = rowMeans(corrected_est)
+      dat_temp = data.frame("bias" = corrected_est - res_list[[i]]$true, "true" = res_list[[i]]$true)
+    } else {
+      mean_theta1=mapply(t=as.data.frame(res_list[[i]]$mean[,,1]),d=as.data.frame(res_list[[i]]$mean_delta[,,1]),FUN=function(t,d){t-mean(d)})
+      mean_theta2=mapply(t=as.data.frame(res_list[[i]]$mean[,,2]),d=as.data.frame(res_list[[i]]$mean_delta[,,2]),FUN=function(t,d){t-mean(d)})
+      mean_theta=(mean_theta1+mean_theta2)/2
+      iter=ncol(mean_theta)
+      est = rowMeans(mean_theta[,(iter-899):iter])
+      dat_temp = data.frame("bias" = est - res_list[[i]]$true, "true" = res_list[[i]]$true)
+    }
+     dat = rbind(dat, dat_temp)
   }
   
   dat = as.data.frame(cbind(dat, rep(alg_type, each = nperson)))
@@ -255,11 +327,93 @@ ggplot_bias = function(res_list, alg_type){
     geom_point(alpha = 0.5) +
     geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
     labs(x = "\u03B8", y = "Bias of Elo ratings") +
-    jtools::theme_apa(legend.font.size = 10)
+    jtools::theme_apa(legend.font.size = 10)+
+    theme(axis.line = element_line(colour = "black"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank()) 
   
   
   return(plot_out)
 }
+
+ggplot_bias_colored = function(res_list, alg_type){
+  est = res_list[[1]]$mean
+  corrected_est =mapply(t=as.data.frame(est),d=as.data.frame(res_list[[1]]$mean_delta),FUN=function(t,d){t-mean(d)})
+  corrected_est = rowMeans(corrected_est[,-c(1:900)])
+  dat = data.frame("bias" = corrected_est - res_list[[1]]$true, "true" = res_list[[1]]$true)
+  nperson = nrow(dat)
+  
+  for(i in 2:length(res_list)){
+    if(alg_type[i] != "double"){
+      est = res_list[[i]]$mean
+      corrected_est = mapply(t=as.data.frame(est),d=as.data.frame(res_list[[i]]$mean_delta),FUN=function(t,d){t-mean(d)})
+      corrected_est = rowMeans(corrected_est[,-c(1:900)])
+      dat_temp = data.frame("bias" = corrected_est - res_list[[i]]$true, "true" = res_list[[i]]$true)
+    } else {
+      mean_theta1=mapply(t=as.data.frame(res_list[[i]]$mean[,,1]),d=as.data.frame(res_list[[i]]$mean_delta[,,1]),FUN=function(t,d){t-mean(d)})
+      mean_theta2=mapply(t=as.data.frame(res_list[[i]]$mean[,,2]),d=as.data.frame(res_list[[i]]$mean_delta[,,2]),FUN=function(t,d){t-mean(d)})
+      mean_theta=(mean_theta1+mean_theta2)/2
+      iter=ncol(mean_theta)
+      est = rowMeans(mean_theta[,-c(1:900)])
+      dat_temp = data.frame("bias" = est - res_list[[i]]$true, "true" = res_list[[i]]$true)
+    }
+     dat = rbind(dat, dat_temp)
+  }
+  
+  colors = factor(rep(1:length(alg_type), each = nperson), levels = 1:length(alg_type), labels = alg_type)
+  dat = as.data.frame(cbind(dat, colors))
+  colnames(dat) = c("bias", "true", "alg_type")
+  
+  if("double" %in% alg_type){
+    dat = dat %>% mutate(alg_type = ifelse(alg_type == "double", "1", "2"))
+    plot_out = ggplot(dat, aes(x = true, y = bias, color = alg_type)) +
+      geom_point() +
+      scale_alpha_identity() +
+      geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
+      labs(x = "True \u03B8", y = "Bias of Elo ratings") +
+      scale_color_manual(values = c("mediumpurple4", "grey")) +
+      jtools::theme_apa(legend.font.size = 10)+
+      theme(axis.line = element_line(colour = "black"),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.border = element_blank(),
+            panel.background = element_blank(),
+            legend.position = "none") 
+  } else {
+    plot_out = ggplot(dat, aes(x = true, y = bias, color = alg_type)) +
+      geom_point(alpha = 0.5) +
+      geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
+      labs(x = "True \u03B8", y = "Bias of Elo ratings") +
+      jtools::theme_apa(legend.font.size = 10)+
+      theme(axis.line = element_line(colour = "black"),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.border = element_blank(),
+            panel.background = element_blank()) 
+  }
+  return(plot_out)
+}
+
+ggplot_bias_double_single = function(res){
+  mean_theta1=mapply(t=as.data.frame(res$mean[,,1]),d=as.data.frame(res$mean_delta[,,1]),FUN=function(t,d){t-mean(d)})
+  mean_theta2=mapply(t=as.data.frame(res$mean[,,2]),d=as.data.frame(res$mean_delta[,,2]),FUN=function(t,d){t-mean(d)})
+  mean_theta=(mean_theta1+mean_theta2)/2
+  iter=ncol(mean_theta)
+  mean_theta=rowMeans(mean_theta[,(iter-899):iter])
+  dat = data.frame("bias" =  mean_theta-res$true, "true" = res$true)
+  
+  plot_out = ggplot(dat, aes(x = true, y = bias)) +
+    geom_point(alpha = 0.5) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    labs(x = "\u03B8", y = "Bias of Elo ratings") +
+    jtools::theme_apa(legend.font.size = 10)
+
+  return(plot_out)  
+}  
+
+
 
 
 ggplot_box = function(res_K, measure_func, groups, lab_y, lab_x){
@@ -285,7 +439,7 @@ ggplot_box = function(res_K, measure_func, groups, lab_y, lab_x){
   return(plot_out)
 } 
 
-ggplot_point = function(res_K, measure_func, groups, lab_y, lab_x){
+ggplot_point = function(res_K, measure_func, groups, lab_y, lab_x, y_min, y_max){
   var = measure_func(res_K[[1]])
   npersons = length(var)
   group = rep(groups[1], times = npersons)
@@ -302,28 +456,94 @@ ggplot_point = function(res_K, measure_func, groups, lab_y, lab_x){
   
   dat = dat %>% group_by(group) %>% summarise(mean_group = mean(var, na.rm = TRUE))
   
+  #TODO:generate a plot with points for mean groups connected by lines and make them
+  #in a way that the y axis can be added as a parameter
+  
   plot_out = ggplot(dat, aes(x = group, y = mean_group)) +
     geom_point() + 
     geom_line() +
-    labs(x = lab_x, y = lab_y) +
-    jtools::theme_apa(legend.font.size = 10)
+    labs(x = lab_x, y = lab_y) + 
+    scale_y_continuous(limits = c(y_min, y_max)) +
+    jtools::theme_apa(legend.font.size = 10) +
+    theme(axis.line = element_line(colour = "black"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank()) 
+  
+
   
   return(plot_out)
 } 
 
-ggplot_double_dots = function(res_K_list, measure_func, lab_y){
-  groupsK = c(0.1,0.2,0.4,0.5,0.3)
+#this takes multiple res_k as alist and and prints the mean of the measure_func for each group
+#with different colours corresponding to a value in a vector called alg_type
+ggplot_multiple_point = function(res_K_list, measure_func, groups, lab_y, lab_x, y_min, y_max, alg_type){
+  var = measure_func(res_K_list[[1]][[1]])
+  npersons = length(var)
+  group = rep(groups[1], times = npersons)
+  dat = cbind(var, group, alg_type[1])
   
-  var1 = measure_func(res_K_list[[1]][[1]])
-  var2 = measure_func(res_K_list[[2]][[1]])
+  for(a in 2:length(res_K_list[[1]])){
+    var = measure_func(res_K_list[[1]][[a]])
+    group = rep(groups[a], times = npersons)
+    dat = rbind(dat, cbind(var, group, alg_type[1]))
+  }
+  for(t in 2:length(res_K_list)){
+    for(i in 1:length(res_K_list[[t]])){
+      var = measure_func(res_K_list[[t]][[i]])
+      group = rep(groups[i], times = npersons)
+      dat = rbind(dat, cbind(var, group, rep(alg_type[t], times = npersons)))
+    }
+  }
+  
+  
+  dat = as.data.frame(dat) %>% mutate(var = as.numeric(var))
+  colnames(dat) = c("var", "group", "alg_type")
+  
+  dat$alg_type = factor(dat$alg_type, levels = c("fixed-random", "fixed-adaptive", "updated-random"))
+  dat = dat %>% group_by(group, alg_type) %>% summarise(mean_group = mean(var, na.rm = TRUE))
+  
+  plot_out = ggplot(dat, aes(x = group, y = mean_group, color = alg_type, group = factor(alg_type))) +
+    geom_point() + 
+    geom_line() +
+    labs(x = lab_x, y = lab_y) + 
+    scale_y_continuous(limits = c(y_min, y_max)) +
+#    scale_color_manual(values = c("#00BA38", "#F8766D","#619CFF")) +
+    jtools::theme_apa(legend.font.size = 10)+
+    theme(axis.line = element_line(colour = "black"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank()) 
+  
+  return(plot_out)
+}
+
+ggplot_double_dots = function(res_K_list, measure_func, lab_y, ht = NULL, y_min, y_max){
+  groupsK = c(0.1,0.2,0.3,0.4,0.5)
+  
+
+  if(!is.null(ht)){
+    var1 = measure_func(res_K_list[[1]][[1]], ht[[1]][[1]])
+    var2 = measure_func(res_K_list[[2]][[1]], ht[[2]][[1]])
+  } else {
+    var1 = measure_func(res_K_list[[1]][[1]])
+    var2 = measure_func(res_K_list[[2]][[1]])
+  }
   npersons = length(var)
   group1 = rep(groupsK[1], times = npersons)
   dat1 = cbind(var1, group1, rep(1, times = npersons))
   dat2 = cbind(var2, group1, rep(2, times = npersons))
   
   for(i in 2:5){
-    var1 = measure_func(res_K_list[[1]][[i]])
-    var2 = measure_func(res_K_list[[2]][[i]])
+    if(!is.null(ht)){
+      var1 = measure_func(res_K_list[[1]][[i]], ht[[1]][[i]])
+      var2 = measure_func(res_K_list[[2]][[i]], ht[[2]][[i]])
+    } else {
+      var1 = measure_func(res_K_list[[1]][[i]])
+      var2 = measure_func(res_K_list[[2]][[i]])
+    }
     group1 = rep(groupsK[i], times = npersons)
     dat1 = rbind(dat1, cbind(var1, group1, rep(1, times = npersons)))
     dat2 = rbind(dat2, cbind(var2, group1, rep(2, times = npersons)))
@@ -340,18 +560,25 @@ ggplot_double_dots = function(res_K_list, measure_func, lab_y){
   
   print(dat)
   
-  plot_out = ggplot(dat, aes(x = groups, y = mean_group, color = type)) +
+  plot_out = ggplot(dat, aes(x = groups, y = mean_group, color = type, linetype = type)) +
     geom_point() + 
     geom_line(aes(color = type)) +
-    scale_color_manual(values = c("red", "blue")) +
-    scale_x_continuous(sec.axis = sec_axis(~.+0.4, name="Probability Correct")) +
-    labs(x = "K", y = lab_y) + 
+    scale_color_manual(values = c("mediumpurple4", "red")) +
+    scale_x_continuous(sec.axis = sec_axis(~.+0.4, name="Probability Correct (dashed)")) +
+    scale_y_continuous(limits = c(y_min, y_max)) +
+    labs(x = "K (solid)", y = lab_y) + 
     guides(color = "none") +
     jtools::theme_apa() + 
     theme(
-      axis.title.x = element_text(color = "blue"),
+      axis.title.x = element_text(color = "mediumpurple4"),
       axis.title.x.top = element_text(color = "red")
-    )
+    ) +
+    theme(axis.line = element_line(colour = "black"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank(),
+          legend.position = "none")
   
   
   return(plot_out)

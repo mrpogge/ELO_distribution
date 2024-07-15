@@ -1,7 +1,7 @@
 ################################################################################
 # Dependencies
 ################################################################################
-source('elo functions.R')
+source('elo_functions.R')
 source('simulations/fix_params.R')
 
 ################################################################################
@@ -9,7 +9,7 @@ source('simulations/fix_params.R')
 ################################################################################
 res_fix_items_adaptive_K= list()
 for(i in 1:length(K)){
-  temp = elo_double(n=nstudents,
+  temp = elo(n=nstudents,
                      m=nitems,
                      reps=nreps,
                      games=ngames,

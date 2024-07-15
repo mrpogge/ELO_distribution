@@ -117,13 +117,47 @@ hitting_time=function(X){
   }
   iter=ncol(X$mean)
   mean_inv=rowMeans(X$mean[,(iter-499):iter])  
-  ht=mapply(mean_inv=mean_inv,mean=as.data.frame(t(X$mean)),FUN=function(mean,mean_inv){min(which(abs(mean-mean_inv)<0.01))})
+  ht=mapply(mean_inv=mean_inv,mean=as.data.frame(t(X$mean)),FUN=function(mean,mean_inv){min(which(abs(mean-mean_inv)<0.01), na.rm = TRUE)})
   return(ht)
 }
 
+hitting_time_double=function(res_double, res_single){
+  iter=ncol(res_double$mean)
+  mean_inv=rowMeans(res_single$mean[,(iter-499):iter,1])  
+  ht=mapply(mean_inv=mean_inv,mean=as.data.frame(t(res_single$mean[,,1])),FUN=function(mean,mean_inv){min(which(abs(mean-mean_inv)<0.01))})
+  return(ht *2)
+}
+
+
 ################################################################################
-# Absolute bias
+# LEGACY: Absolute bias (one need to calculate the bias regarding to the diff of theta and the mean of items for identifiability)
 ################################################################################
 absolute_bias = function(res){
+  if(length(dim(res$mean))==3){
+    res$mean=res$mean[,,1]
+  }
   return(rowMeans(abs(res$mean[,501:1000] - res$true)))
 }
+
+################################################################################
+# revisioned absolute bias
+################################################################################
+abs_bias_revised = function(X){
+  mean_theta1=mapply(t=as.data.frame(X$mean[,,1]),d=as.data.frame(X$mean_delta[,,1]),FUN=function(t,d){t-mean(d)})  
+  mean_theta2=mapply(t=as.data.frame(X$mean[,,2]),d=as.data.frame(X$mean_delta[,,2]),FUN=function(t,d){t-mean(d)})
+  mean_theta=(mean_theta1+mean_theta2)/2
+  iter=ncol(mean_theta)
+  mean_theta=rowMeans(mean_theta[,(iter-499):iter])
+  return(mean(abs(mean_theta-X$true)))
+}
+
+abs_bias_revised_single = function(X){
+  mean_theta=mapply(t=as.data.frame(X$mean),d=as.data.frame(X$mean_delta),FUN=function(t,d){t-mean(d)})
+  iter=ncol(mean_theta)
+  mean_theta=rowMeans(mean_theta[,(iter-499):iter])
+  return(mean(abs(mean_theta-X$true)))
+}
+
+
+
+

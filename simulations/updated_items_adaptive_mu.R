@@ -1,7 +1,7 @@
 ################################################################################
 # Dependencies
 ################################################################################
-source('elo functions.R')
+source('elo_functions.R')
 source('simulations/fix_params.R')
 
 ################################################################################
@@ -14,7 +14,7 @@ for(i in 1:length(mu_P)){
              reps=nreps,
              games=ngames,
              K=K_baseline,
-             m_th = mu_theta_baseline,
+             m_th = mu_theta[i],
              s_th = sigma_theta,
              m_d=mu_delta,
              s_d=sigma_delta,
