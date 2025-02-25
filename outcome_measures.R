@@ -10,7 +10,7 @@
 # for all iterations
 #                       - res$var: the variance of ratings over replications
 #                       - res$mean_delta: the mean of the item ratings in the last
-# iteration (??)
+# iteration
 
 ################################################################################
 # BIAS CORRECTION
@@ -112,20 +112,21 @@ var_elo_vec=function(res, summary = FALSE){
 #given chain of ratings and the reference value is smaller than 0.01.
 
 hitting_time=function(X){
-  if(length(dim(X$mean))==3){
-    X$mean=(X$mean[,,1]+X$mean[,,2])/2
-  }
-  iter=ncol(X$mean)
-  mean_inv=rowMeans(X$mean[,(iter-499):iter])  
-  ht=mapply(mean_inv=mean_inv,mean=as.data.frame(t(X$mean)),FUN=function(mean,mean_inv){min(which(abs(mean-mean_inv)<0.01), na.rm = TRUE)})
+  mean_theta=mapply(t=as.data.frame(X$mean),d=as.data.frame(X$mean_delta),FUN=function(t,d){t-mean(d)})
+  iter=ncol(mean_theta)
+  mean_inv=rowMeans(mean_theta[,(iter-499):iter])  
+  ht=mapply(mean_inv=mean_inv,mean=as.data.frame(t(mean_theta)),FUN=function(mean,mean_inv){min(which(abs(mean-mean_inv)<0.01), na.rm = TRUE)})
   return(ht)
 }
 
-hitting_time_double=function(res_double, res_single){
-  iter=ncol(res_double$mean)
-  mean_inv=rowMeans(res_single$mean[,(iter-499):iter,1])  
-  ht=mapply(mean_inv=mean_inv,mean=as.data.frame(t(res_single$mean[,,1])),FUN=function(mean,mean_inv){min(which(abs(mean-mean_inv)<0.01))})
-  return(ht *2)
+hitting_time_double=function(X, res_single){
+  mean_theta1=mapply(t=as.data.frame(X$mean[,,1]),d=as.data.frame(X$mean_delta[,,1]),FUN=function(t,d){t-mean(d)})  
+  mean_theta2=mapply(t=as.data.frame(X$mean[,,2]),d=as.data.frame(X$mean_delta[,,2]),FUN=function(t,d){t-mean(d)})
+  mean_theta=(mean_theta1+mean_theta2)/2
+  iter=ncol(mean_theta)
+  mean_inv=rowMeans(mean_theta[,(iter-499):iter])  
+  ht=mapply(mean_inv=mean_inv,mean=as.data.frame(t(mean_theta)),FUN=function(mean,mean_inv){min(which(abs(mean-mean_inv)<0.01))})
+  return(ht*2)
 }
 
 

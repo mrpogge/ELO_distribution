@@ -39,7 +39,7 @@ res_K_list = list(chain_mean_K,chain_mean_mu)
 ht_list = list(res_double_elo_K, res_double_elo_mu)
 
 p_var = ggplot_double_dots(res_K_list, var_elo_vec, "Average Variance", y_min = 0, y_max = 0.32)
-p_HT = ggplot_double_dots(res_K_list, hitting_time_double, "Average Hitting Time", ht = ht_list, y_min = 0, y_max = 1500)
+p_HT = ggplot_double_dots(ht_list, hitting_time_double, "Average Hitting Time", ht = ht_list, y_min = 0, y_max = 1600)
 p_bias = ggplot_double_dots(ht_list, abs_bias_revised, "Average Absolute Bias", y_min = 0, y_max = 0.13)
 
 patch_double_axis = p_bias + p_var + p_HT  + plot_layout(ncol = 3, nrow = 1, widths = c(5, 5, 5)) 

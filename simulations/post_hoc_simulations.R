@@ -1,27 +1,3 @@
-setwd("C:/Work files/Veni/Elo paper/ELO_distribution")
-
-source("elo functions.R")
-
-#########################################
-### Effect of K and P on variance inflation
-
-load("ResultsAdaptive_final.RData")
-
-Vars=sapply(res_adaptive,FUN=function(X){apply(X$mean,2,var)})
-
-png("UA_inflation.png",width=1000,height=500)
-par(mfrow=c(1,2))
-plot(sqrt(Vars[,5]),type='l',ylab='SD of Elo ratings',xlab='Items answered',cex.lab=2,cex.axis=2)
-jj=c(2,3,1,4,5)
-for(j in 1:5){lines(sqrt(Vars[,jj[j]]),col=j)}
-plot(sqrt(Vars[,6]),type='l',ylab='SD of Elo ratings',xlab='Items answered',cex.lab=2,cex.axis=2)
-jj=c(6,7,1,8,9)
-for(j in 1:5){lines(sqrt(Vars[,jj[j]]),col=j)}
-dev.off()
-# the plots need a legend (first with different K, second with different P)
-#TODO: the speed with which variance inflates depends on K and P recreate the plot!
-# Variance through iterations grouped by both K and mu (left and right)
-
 #########################################
 #### Adaptive item selection based on true values
 
@@ -92,19 +68,8 @@ elo_true=function(n,m,reps,games,K,mP=0,sP=0.5,m_th=0,s_th=1,m_d=0,s_d=1.5,theta
 }
 
 res=elo_true(n=500,m=100,reps=20,games=2000,K=0.3,mP=log(0.7/0.3),m_th=log(0.7/0.3))
-# For the paper we need n=500, m=100, games=1500 and reps=500. If the first plot is too noisy with reps=500, we would need to try more reps (but 10000 is an overkill here)
 
-save(res,file="ResultsTrueElo.RData")
-
-load(file="ResultsTrueElo.RData")
-
-png(file='elo_true.png',width=1000,height=500)
-par(mfrow=c(1,2))
-plot_elo(res) # I would want all iterations to be shown here rather than the first 1000
-plot(apply(res$mean,2,var),type='l',cex.lab=2,cex.axis=2)
-dev.off()
-
-#TODO: just traceplot (left) collapse across persons calculate the variance, plot it through iterations (right)
+save(res,file="output/ResultsTrueElo.RData")
 
 #########################################
 #### Expected error in item difficulties
@@ -190,20 +155,8 @@ variance_inflation=function(n,m,reps,games,K,adaptive=0,mP=0,sP=0.5,fixed_items=
 res=variance_inflation(n=500,m=100,reps=20,games=1000,K=0.3,adaptive=1,mP=log(0.7/0.3),m_th=log(0.7/0.3))
 # For the paper we need n=500, m=100, games=1000 and reps=500. 
 
-save(res,file='VarianceInflation.RData')
+save(res,file='output/VarianceInflation.RData')
 
-load(file='VarianceInflation.RData')
-
-par(mfrow=c(1,1))
-png('variance_inflation.png',width=600,height=500)
-theta=res$true
-v=c(-2,-1,0,1,2)+mean(theta)
-P=c(which.min(abs(theta-v[1])))
-for(i in 2:length(v)){P=c(P,which.min(abs(theta-v[i])))}
-matplot((res$exp_bias[1:1000,P]),type='l',lty=1,col=c(1:length(v)),xlab='Items answered',ylab='Expected error in item difficulty',cex.lab=2,cex.axis=2)
-dev.off()
-
-load("output/ResultsVarianceInflation.RData")
 
 #########################################
 ### Autocorrelation in the updated-random scenario
@@ -281,17 +234,11 @@ Design=c(0.1,0.2,0.3,0.4,0.5)
 res=list()
 
 for(j in 1:5){
-  res[[j]]=elo_autocorrelation(n=500,m=100,reps=20,games=1000,K=Design[j])
+  res[[j]]=elo_autocorrelation(n=500,m=100,reps=200,games=1000,K=Design[j])
 }
 # For the paper n=1000, m=200, reps=500
 
-save(res,file='ResultsAutocorrelation.RData')
-
-png('autocorrelation.png',width=600,height=500)
-plot(rowMeans(res[[1]]$A),type='l',cex.lab=2,cex.axis=2,ylab='Autocorrelation',xlab='Lag')
-for(j in 2:5){lines(rowMeans(res[[j]]$A),col=j)}
-# the lines should be of different colors and there should be a legend explaining that they refer to different K
-dev.off()
+save(res,file='output/ResultsAutocorrelation.RData')
 
 #########################################
 ### Lagged adaptive item selection
@@ -362,14 +309,8 @@ res=list()
 for(j in 1:9){
   res[[j]]=elo_lag(n=500,m=100,reps=10,K=0.3,games=1000+L[j],LH=L[j],mP=log(0.7/0.3),m_th=log(0.7/0.3))
 }
-# For the paper n=1000, m=200, and I think that reps=100 should be sufficient here to get smooth results
-save(res,file='ResultsDifferentLag.RData')
-
-png('DifferentLag.png',width=600,height=500)
-plot(apply(res[[1]]$mean,2,var),type='l',ylab='Variance of Elo ratings',xlab='Items answered')
-for(i in 2:9){lines(apply(res[[i]]$mean,2,var),col=i)}
-dev.off()
-
+# For the paper n=1000, m=200, and reps=100 
+save(res,file='output/ResultsDifferentLag.RData')
 
 Design=cbind(c(0.3,0.1,0.2,0.4,0.5,0.3,0.3,0.3,0.3),c(rep(0.7,5),0.5,0.6,0.8,0.9))
 res_lagged=list()
@@ -381,10 +322,7 @@ for(j in 1:9){
   res_lagged[[j]]<-elo_lag(n=500,m=100,games=1500,reps=reps,K=K,mP=mP,m_th=m_th,LH=500)
 }
 # For the paper n=1000, m=200, 
-save(res_lagged,file='ResultsLagged.RData')
-
-# Here we want a traceplot (include all iterations, not only 1000 as plot_elo does), the bias plot and the variance plot. The last two should probably be combined with double Elo. Some exploration is needed here.
-# Also, the effect of K and P on bias and variance should be plotted, probably together with double Elo. 
+save(res_lagged,file='output/ResultsLagged.RData')
 
 ### Simulation with Double Elo
 
@@ -405,14 +343,9 @@ for(j in 1:9){
   reps=100
   #reps=500;if(j==1){reps=10000} # this is the number of replications that we should run for the paper
   res_double[[j]]=elo_double(n=n,m=m,reps=reps,games=niter[j],K=K,mP=mP,sP=0.5,m_d=0,s_d=1.5,m_th=mP,s_th=1)
-  save(res_double,Design,file="ResultsDoubleElo.RData")
+  save(res_double,Design,file="output/ResultsDoubleElo.RData")
 }
 
-### In terms of results, we need the traceplot. Maybe we can omit the plots with bias and variance and only report on the average absolute bias and average variance and compare those values to what we had in the updated-random scenario
-### Also the plot with the effects of K and P on bias, variance and hitting time.
-### Ideally, we would see that the results with the lag and the results with double Elo are very similar in terms of bias and variance and then we will only show the results for double elo in a plot and just say that the results are very similar.
-
-### Post-hoc simulation with Double Elo
 
 elo_double_posthoc=function(n,m,reps,games,K,mP,sP,m_th=0,s_th=1,m_d=0,s_d=1,res,prop_new=0.5){
   
@@ -507,7 +440,7 @@ for(j in 1:9){
   res_new[[j]]$mean=res$mean[order(res$true)[c(1:(n*prop_new))/prop_new],,]
   res_new[[j]]$var=res$var[order(res$true)[c(1:(n*prop_new))/prop_new],,]
   res_new[[j]]$true=res$true[order(res$true)[c(1:(n*prop_new))/prop_new]]
-  save(res_new,file="ResultsNewPersons.RData")
+  save(res_new,file="output/ResultsNewPersons.RData")
 }
 
 elo_save=function(n,m,reps,games,K,adaptive=0,mP=0,sP=1,fixed_items=0,items_true=0,m_th=0,s_th=1,m_d=0,s_d=1.5,theta=NULL){
@@ -620,7 +553,7 @@ res=elo_save(500,100,500,1000,0.3,adaptive=0,m_th=log(0.7/0.3))
 
 # Expected error in item difficulties
 # Average error in person abilities
-source("elo functions.R")
+source("elo_functions.R")
 
 variance_inflation2=function(n,m,reps,games,K,adaptive=0,mP=0,sP=0.5,fixed_items=0,items_true=0,m_th=0,s_th=1,m_d=0,s_d=1.5,theta=NULL){
   tic()
