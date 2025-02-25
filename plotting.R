@@ -1,5 +1,5 @@
 ################################################################################
-# LEGACY: trace plot for elo ratings for a few equally spaced students
+# LEGACY: trace plot for elo ratings for a few equally spaced studentsTEST 
 ################################################################################
 plot_elo=function(res,add=FALSE,lwd=1){
   theta=res$true
