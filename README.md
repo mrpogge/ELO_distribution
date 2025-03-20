@@ -18,6 +18,10 @@ In the main directory we store the R and C scripts that are used in the simulati
 
 - **plotting.R**: R functions to prepare data for ggplotting, and the actual plotting functions.
 
+- **elo_for_simulation_revision.c**: A version of the original C code which now contains code to run simulations using Urnings. 
+
+- **revision_simulations**: Code to produce the results reviewer 2 required in their revision (i.e. the comparision between Elo and Urnings).
+
 ### /simulations
 
 This folder contains the different simulations and their settings that we used in the study. The simulations follow a one-at-a-time design meaning that we did not run all possible combinations of factors.  
@@ -28,7 +32,8 @@ Scripts containing the name "fix_items" refers to the modified Elo where the ite
 
 The "baseline" simulations are used to obtain a stable estimate of the mean of the invariant distribution (if there is one). These results are used to plot the change of ratings. 
 
-... EXTRA SIMULATIONS ...
+- **post_hoc_simulations.R**:This script contains simulations that were done after the initial analysis was done to
+further investigate the rating variance inflation. It also contains simulations for the lagged-Elo alternative.
 
 Each simulation results in a .RData file that is saved in the /output folder. These files can be downloaded from the above osf repository. Please keep in mind, that when you want to rerun the analysis or extend on these results you need to create and output folder and save the given files there!
 

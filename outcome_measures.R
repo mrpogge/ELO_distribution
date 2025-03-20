@@ -120,9 +120,7 @@ hitting_time=function(X){
 }
 
 hitting_time_double=function(X, res_single){
-  mean_theta1=mapply(t=as.data.frame(X$mean[,,1]),d=as.data.frame(X$mean_delta[,,1]),FUN=function(t,d){t-mean(d)})  
-  mean_theta2=mapply(t=as.data.frame(X$mean[,,2]),d=as.data.frame(X$mean_delta[,,2]),FUN=function(t,d){t-mean(d)})
-  mean_theta=(mean_theta1+mean_theta2)/2
+  mean_theta=mapply(t=as.data.frame(X$mean[,,1]),d=as.data.frame(X$mean_delta[,,1]),FUN=function(t,d){t-mean(d)})  
   iter=ncol(mean_theta)
   mean_inv=rowMeans(mean_theta[,(iter-499):iter])  
   ht=mapply(mean_inv=mean_inv,mean=as.data.frame(t(mean_theta)),FUN=function(mean,mean_inv){min(which(abs(mean-mean_inv)<0.01))})
