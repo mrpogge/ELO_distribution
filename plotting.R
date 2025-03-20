@@ -1,98 +1,4 @@
 ################################################################################
-# LEGACY: trace plot for elo ratings for a few equally spaced students
-################################################################################
-plot_elo=function(res,add=FALSE,lwd=1){
-  theta=res$true
-  if(length(dim(res$mean))==2){
-    mean_theta=res$mean
-    if(length(res)==4){
-      mean_theta=mapply(t=as.data.frame(res$mean),d=as.data.frame(res$mean_delta),FUN=function(t,d){t-mean(d)})
-    }
-    v=c(-2,-1,0,1,2)+mean(theta)
-    P=c(which.min(abs(theta-v[1])))
-    for(i in 2:length(v)){P=c(P,which.min(abs(theta-v[i])))}
-    matplot(t(mean_theta[P,]),type='l',add=add,lty=1,lwd=lwd,col=c(1:length(v)),xlab='Items answered',ylab='Average Elo rating')
-    abline(h=theta[P],col=c(1:length(v)),lty=2)
-  }
-  if(length(dim(res$mean))==3){
-    mean_theta1=mapply(t=as.data.frame(res$mean[,,1]),d=as.data.frame(res$mean_delta[,,1]),FUN=function(t,d){t-mean(d)})
-    mean_theta2=mapply(t=as.data.frame(res$mean[,,2]),d=as.data.frame(res$mean_delta[,,2]),FUN=function(t,d){t-mean(d)})
-    v=c(-2,-1,0,1,2)+mean(theta)
-    P=c(which.min(abs(theta-v[1])))
-    for(i in 2:length(v)){P=c(P,which.min(abs(theta-v[i])))}
-    matplot(t(mean_theta1[P,]),type='l',add=add,lty=1,lwd=lwd,col=c(1:length(v)),xlab='Item pairs answered',ylab='Average Elo rating')
-    matplot(t(mean_theta2[P,]),type='l',add=TRUE,lty=1,lwd=lwd,col=c(1:length(v)),xlab='Items answered',ylab='Average Elo rating')
-    abline(h=theta[P],col=c(1:length(v)),lty=2)
-  }
-}
-
-################################################################################
-# LEGACY: Plotting the true ability against the variance of the elo ratings 
-# and a second order polinomial approximation
-################################################################################
-
-plot_elo_var=function(res,
-                      add=FALSE,
-                      points=TRUE,
-                      col=1,
-                      ylab = "Variance of Elo ratings",
-                      xlab = "True ability",
-                      ylim = c(0.15,0.2)
-                      ){
-  theta=res$true
-  if(length(dim(res$var))==3){
-    var_theta=(res$var[,,1]+res$var[,,2])/2
-  }
-  if(length(dim(res$var))==2){
-    var_theta=res$var
-  }
-  #theta=theta-mean(theta)
-  iter=ncol(var_theta)
-  x=theta
-  y=rowMeans(var_theta[,-c(1:500)])
-  x2=theta^2
-  m<-coef(lm(y~x+x2))
-  if(add==FALSE){
-    if(points==TRUE){plot(x,y, ylab = ylab, xlab = xlab,ylim = ylim)
-      curve(m[1]+m[2]*x+m[3]*x^2,add=TRUE,col=col)}
-    if(points==FALSE){curve(m[1]+m[2]*x+m[3]*x^2,add=FALSE,col=col,from=-3,to=3)}	
-  }
-  if(add==TRUE){
-    if(points==TRUE){
-      points(x,y,col=col)
-    }
-    curve(m[1]+m[2]*x+m[3]*x^2,add=TRUE,col=col)
-  }
-}
-
-################################################################################
-# LEGACY: Plotting hitting time values
-################################################################################
-plot_hitting_time=function(X,main){
-  plot(X$true,hitting_time(X),ylab='Hitting time',xlab='True ability',main=main)
-}
-
-################################################################################
-# LEGACY: Plotting bias 
-################################################################################
-plot_bias=function(X,main=NULL){
-  plot(X$true,rowMeans(X$mean[,-c(1:500)])-X$true,ylab='Bias of Elo ratings',xlab='True ability',main=main)
-}
-
-################################################################################
-# LEGACY: Plotting bias of the double ELO
-################################################################################
-plot_bias_double=function(X){
-  mean_theta1=mapply(t=as.data.frame(X$mean[,,1]),d=as.data.frame(X$mean_delta[,,1]),FUN=function(t,d){t-mean(d)})
-  mean_theta2=mapply(t=as.data.frame(X$mean[,,2]),d=as.data.frame(X$mean_delta[,,2]),FUN=function(t,d){t-mean(d)})
-  mean_theta=(mean_theta1+mean_theta2)/2
-  iter=ncol(mean_theta)
-  mean_theta=rowMeans(mean_theta[,(iter-499):iter])
-  plot(X$true,mean_theta-X$true,ylab='Bias of Elo ratings',xlab='True ability')
-}  
-
-
-################################################################################
 # GGPLOTTING. traceplots (and the corresponding helper functions )
 ################################################################################
 
@@ -180,6 +86,46 @@ ggplot_elo_both = function(res_list, sim_types, nrow = 1, ncol = 2){
   return(plot_out)
 }
 
+ggplot_elo_urnings = function(res_list, sim_types, urnings, nrow = 1, ncol = 2){
+  
+  theta = res_list[[1]]$true
+  v=c(-2,-1,0,1,2)+mean(theta)
+  P=c(which.min(abs(theta-v[1])))
+  for(i in 2:length(v)){P=c(P,which.min(abs(theta-v[i])))}
+  
+  dat = trace_data_wrangling(res_list[[1]], sim_types[1])
+  for(i in 2:length(res_list)){
+    dat = rbind(dat, trace_data_wrangling(res_list[[i]], sim_types[i]))
+  }
+  colnames(dat) = c("variable", "value", "iteration", "true_est", "alg_type")
+  dat = as.data.frame(dat) %>% 
+    mutate(double = ifelse(true_est == "True Ability", "True Ability", alg_type))
+  
+  dat = dat %>% mutate(iteration = ifelse(alg_type == "Elo rating 1", (iteration * 2) -1, iteration * 2)) %>%
+                mutate(double = ifelse(double != "True Ability", "Elo rating", "True Ability")) %>%
+                select(-true_est, -alg_type)
+  
+  dat_u = urnings %>%
+    pivot_longer(cols = everything(), names_to = "variable", values_to = "value") %>%
+    mutate(iteration = rep(1:nrow(urnings), each = ncol(urnings)),
+           double = "Urnings rating")
+  
+  lab1 = parse(text = paste("\u03B8", " = ", round(theta[P], 2)))
+  dat_u$variable = factor(dat_u$variable, levels = c("X1", "X2", "X3", "X4", "X5"), labels = lab1)
+  
+  dat = rbind(dat, dat_u)
+  
+  plot_out = ggplot(dat, aes(x = iteration, y = value, color = variable, linetype = double)) +    geom_line() +
+    labs(x = "Items Answered", y = expression(theta), color = "Student") +
+    jtools::theme_apa(legend.font.size = 10)+
+    theme(axis.line = element_line(colour = "black"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank()) 
+  
+  return(plot_out)
+}
 
 ggplot_elo_single = function(res){
   dat = trace_data_wrangling(res, "single")
@@ -250,11 +196,12 @@ ggplot_elo_var = function(res_list, alg_type, smooth = TRUE, dELO = FALSE){
             panel.border = element_blank(),
             panel.background = element_blank()) 
   } else if(dELO == TRUE){
-    dat = dat %>% mutate(alg_type = ifelse(alg_type == "double", "1", "2"))
-    plot_out = ggplot(dat, aes(x = x,y = y, color = alg_type)) + 
+    dat = dat %>% mutate(alg_alpha = ifelse(alg_type == "double", "1", "2"))
+    plot_out = ggplot(dat, aes(x = x,y = y, color = alg_type, alpha = alg_alpha)) + 
       geom_point() +
-      scale_alpha_identity() +
-      scale_color_manual(values = c("mediumpurple4", "grey")) +
+      scale_alpha_discrete(range = c(0.9, 0.2), guide = "none") +
+      scale_color_manual(values = c("#F8766D","#00BA38","#619CFF","mediumpurple"),
+                         labels = c("fixed-random", "fixed-adaptive", "updated-random", "updated-adaptive with parallel Elo")) +
       labs(x = "True \u03B8", y = "Variance of Elo ratings") +
       jtools::theme_apa(legend.font.size = 10)+
       theme(axis.line = element_line(colour = "black"),
@@ -262,7 +209,7 @@ ggplot_elo_var = function(res_list, alg_type, smooth = TRUE, dELO = FALSE){
             panel.grid.minor = element_blank(),
             panel.border = element_blank(),
             panel.background = element_blank(),
-            legend.position = "none") 
+            legend.position = "bottom") 
   }
 
   return(plot_out)
@@ -332,7 +279,8 @@ ggplot_bias = function(res_list, alg_type){
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
           panel.border = element_blank(),
-          panel.background = element_blank()) 
+          panel.background = element_blank(),
+          legend.position = "bottom") 
   
   
   return(plot_out)
@@ -367,20 +315,21 @@ ggplot_bias_colored = function(res_list, alg_type){
   colnames(dat) = c("bias", "true", "alg_type")
   
   if("double" %in% alg_type){
-    dat = dat %>% mutate(alg_type = ifelse(alg_type == "double", "1", "2"))
-    plot_out = ggplot(dat, aes(x = true, y = bias, color = alg_type)) +
+    dat = dat %>% mutate(alg_alpha = ifelse(alg_type == "double", "1", "2"))
+    plot_out = ggplot(dat, aes(x = true, y = bias, color = alg_type, alpha = alg_alpha)) +
       geom_point() +
-      scale_alpha_identity() +
+      scale_alpha_discrete(range = c(0.9,0.2), guide = "none") +
       geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
       labs(x = "True \u03B8", y = "Bias of Elo ratings") +
-      scale_color_manual(values = c("mediumpurple4", "grey")) +
+      scale_color_manual(values = c("#F8766D","#00BA38","#619CFF","mediumpurple"),
+                         labels = c("fixed-random", "fixed-adaptive", "updated-random", "updated-adaptive with parallel Elo")) +
       jtools::theme_apa(legend.font.size = 10)+
       theme(axis.line = element_line(colour = "black"),
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
             panel.border = element_blank(),
             panel.background = element_blank(),
-            legend.position = "none") 
+            legend.position = "bottom") 
   } else {
     plot_out = ggplot(dat, aes(x = true, y = bias, color = alg_type)) +
       geom_point(alpha = 0.5) +
@@ -412,8 +361,6 @@ ggplot_bias_double_single = function(res){
 
   return(plot_out)  
 }  
-
-
 
 
 ggplot_box = function(res_K, measure_func, groups, lab_y, lab_x){

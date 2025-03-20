@@ -103,6 +103,7 @@ print(ua/ur)
 # read double elo results
 ################################################################################
 load("output/ResultsDoubleEloBaseline.RData")
+load("output/post_hoc_output/Urnings_plot.RData")
 
 #merge the two chains of elo ratings in the results
 #collapse the double_elo_baseline$mean based on the last dimension of the array
@@ -120,6 +121,7 @@ for(i in 1:4){
 }
 names(chain_one) = names(chain_two) = names(chain_mean) = names(double_elo_baseline)
 
+
 ################################################################################
 # traceplot
 ################################################################################
@@ -127,7 +129,7 @@ p1_double = ggplot_elo_single(chain_mean)
 
 res_list_both = list(chain_one, chain_two)
 alg_type_both = c("Elo rating 1", "Elo rating 2")
-p1_double_both = ggplot_elo_both(res_list_both, alg_type_both)
+p1_double_both = ggplot_elo_urnings(res_list_both, alg_type_both, Urnings)
 
 ggsave("figures/figure_11_trace_parallel.png", p1_double_both, units = "mm", dpi = 300,height = 100, width = 200)
 ################################################################################
@@ -154,6 +156,7 @@ pTotal_bias = ggplot_bias_colored(res_double, alg_type_double)
 ggsave("figures/figure_12_bias_parallel.png", pTotal_bias, units = "mm", dpi = 600)
 
 
-p_paralell_bias_var = p3_var + pTotal_bias + plot_layout(nrow = 1, ncol = 2, guides = "collect")
+p_paralell_bias_var = p3_var + pTotal_bias + plot_layout(nrow = 1, ncol = 2, guides = "collect") &
+  theme(legend.position='bottom')
 ggsave("figures/figure_12_13_bias_var_parallel.png", p_paralell_bias_var, units = "mm", dpi = 300, height = 100, width = 200)
 
